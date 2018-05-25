@@ -122,26 +122,9 @@ extern "C"
 
 	void Camera_SetHoloProjection(Camera* camera, const class Matrix4& view, const class Matrix4& projection)
 	{
-		float nearClip = projection.m32_ / projection.m22_; //0.1
-		float farClip = projection.m32_ / (projection.m22_ + 1); //20
-		float fovVertical = 360 * atanf(1 / projection.m11_) / M_PI; //17.1
-		float aspect = projection.m11_ / projection.m00_; //1.76
+        camera->SetProjection(projection);
 
-		camera->SetSkew(projection.m10_);
-		camera->SetProjectionOffset(Vector2(-projection.m20_ / 2.0f, -projection.m21_ / 2.0f));
-		camera->SetAspectRatio(aspect);
-		camera->SetFov(fovVertical);
-		camera->SetNearClip(nearClip);
-		camera->SetFarClip(farClip);
-
-		Matrix4 viewt = view.Inverse().Transpose();
-		Quaternion rotation = viewt.Rotation();
-		rotation.x_ *= -1; //RH to LH
-		rotation.y_ *= -1;
-
-		auto cameraNode = camera->GetNode();
-		cameraNode->SetWorldPosition(Vector3(viewt.m03_, viewt.m13_, -viewt.m23_));
-		cameraNode->SetWorldRotation(rotation);
+        camera->GetNode()->SetTransform(reinterpret_cast<const Matrix3x4&>(view));
 	}
 	
 	__declspec(dllexport) void Camera_SetHoloProjections(
@@ -157,7 +140,7 @@ extern "C"
 			auto leftCameraNode = leftEyeCamera->GetNode();
 			auto rightCameraNode = rightEyeCamera->GetNode();
 			
-			auto leftToRightVec = (rightCameraNode->GetWorldPosition() - leftCameraNode->GetWorldPosition());
+			auto leftToRightVec = (rightCameraNode->GetPosition() - leftCameraNode->GetPosition());
 			float separation = leftToRightVec.Length();
 
 			// Note: atanf and tanf cancel, as does reciprocal
@@ -167,11 +150,11 @@ extern "C"
 			float cullEyePullback = (0.5f * separation) * leftProjection.m00_;
 
 			// Move cull camera between eyes and pull back
-			auto cullCameraPosition = (leftCameraNode->GetWorldPosition() + (0.5f * leftToRightVec)) - (leftCameraNode->GetWorldDirection().Normalized() * cullEyePullback);
+			auto cullCameraPosition = (leftCameraNode->GetPosition() + (0.5f * leftToRightVec)) - (leftCameraNode->GetDirection().Normalized() * cullEyePullback);
 			
 			// Copy projection and rotation from left camera and set the position
 			Camera_SetHoloProjection(cullingCamera, leftView, leftProjection);
-			cullingCamera->GetNode()->SetWorldPosition(cullCameraPosition);
+			cullingCamera->GetNode()->SetPosition(cullCameraPosition);
 			
 			// Move culling camera's near and far planes ahead to match that of the eye cameras
 			cullingCamera->SetNearClip(cullingCamera->GetNearClip() + cullEyePullback);

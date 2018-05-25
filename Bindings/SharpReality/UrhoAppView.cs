@@ -25,7 +25,7 @@ namespace Urho.SharpReality
 		public HolographicSpace HolographicSpace { get; private set; }
 		public StereoApplication Game { get; private set; }
 		public SpatialInteractionManager InteractionManager { get; private set; }
-		public SpatialGestureRecognizer SpatialGerstureRecognizer { get; private set; }
+		public SpatialGestureRecognizer SpatialGestureRecognizer { get; private set; }
 		public SpatialStationaryFrameOfReference ReferenceFrame { get; private set; }
 		public GesturesManager GesturesManager { get; private set; }
 		public SpatialMappingManager SpatialMappingManager { get; private set; }
@@ -111,7 +111,7 @@ namespace Urho.SharpReality
 		[DllImport(Consts.NativeImport, CallingConvention = CallingConvention.Cdecl)]
 		static extern void InitializeSpace();
 
-		public unsafe void Run()
+		public void Run()
 		{
 			AppStarting?.Invoke();
 			ReferenceFrame = SpatialLocator.GetDefault().CreateStationaryFrameOfReferenceAtCurrentLocation();
@@ -138,18 +138,14 @@ namespace Urho.SharpReality
 							continue;
 						var cameraPose = prediction.CameraPoses[0];
 
-						var viewBox = cameraPose.TryGetViewTransform(ReferenceFrame.CoordinateSystem);
-						if (viewBox != null)
+						var viewTransform = cameraPose.TryGetViewTransform(ReferenceFrame.CoordinateSystem);
+						if (viewTransform != null)
 						{
-							Matrix4x4 leftViewMatrixDx = viewBox.Value.Left;
-							Matrix4x4 rightViewMatrixDx = viewBox.Value.Right;
-							Matrix4x4 leftProjMatrixDx = cameraPose.ProjectionTransform.Left;
-							Matrix4x4 rightProjMatrixDx = cameraPose.ProjectionTransform.Right;
+							Matrix4 leftViewMatrixUrho = MatrixConversion.AffineTransformFromDirectX(viewTransform.Value.Left);
+							Matrix4 rightViewMatrixUrho = MatrixConversion.AffineTransformFromDirectX(viewTransform.Value.Right);
+                            Matrix4 leftProjMatrixUrho = MatrixConversion.ProjectionFromDirectX(cameraPose.ProjectionTransform.Left);
+							Matrix4 rightProjMatrixUrho = MatrixConversion.ProjectionFromDirectX(cameraPose.ProjectionTransform.Right);
 
-							Matrix4 leftViewMatrixUrho =  *(Matrix4*)(void*)&leftViewMatrixDx;
-							Matrix4 rightViewMatrixUrho = *(Matrix4*)(void*)&rightViewMatrixDx;
-							Matrix4 leftProjMatrixUrho =  *(Matrix4*)(void*)&leftProjMatrixDx;
-							Matrix4 rightProjMatrixUrho = *(Matrix4*)(void*)&rightProjMatrixDx;
 							Game.UpdateStereoView(leftViewMatrixUrho, rightViewMatrixUrho, leftProjMatrixUrho, rightProjMatrixUrho);
 						}
 

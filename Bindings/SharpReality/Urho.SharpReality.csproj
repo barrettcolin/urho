@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GestureManager.cs" />
+    <Compile Include="MatrixConversion.cs" />
     <Compile Include="SpatialMappingManager.cs" />
     <Compile Include="UrhoAppView.cs" />
     <Compile Include="UrhoAppViewSource.cs" />

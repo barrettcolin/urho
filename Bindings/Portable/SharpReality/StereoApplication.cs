@@ -32,8 +32,8 @@ namespace Urho.SharpReality
 			{
 				if (distanceBetweenEyes == 0 && !Emulator)
 				{
-					var l = LeftCamera.Node.WorldPosition;
-					var r = RightCamera.Node.WorldPosition;
+					var l = LeftCamera.Node.Position;
+					var r = RightCamera.Node.Position;
 					distanceBetweenEyes = (float)Math.Sqrt((r.X-l.X)*(r.X-l.X)+(r.Y-l.Y)*(r.Y-l.Y)+(r.Z-l.Z)*(r.Z-l.Z));
 				}
 				return distanceBetweenEyes;
@@ -44,7 +44,7 @@ namespace Urho.SharpReality
 		{
 			get
 			{
-				var leftCameraNode = LeftCamera.Node.WorldPosition;
+				var leftCameraNode = LeftCamera.Node.Position;
 				if (Emulator) return leftCameraNode;
 				leftCameraNode.X += DistanceBetweenEyes / 2;
 				return leftCameraNode;
