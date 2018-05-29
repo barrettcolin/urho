@@ -141,10 +141,10 @@ namespace Urho.SharpReality
 						var viewTransform = cameraPose.TryGetViewTransform(ReferenceFrame.CoordinateSystem);
 						if (viewTransform != null)
 						{
-							Matrix4 leftViewMatrixUrho = MatrixConversion.AffineTransformFromDirectX(viewTransform.Value.Left);
-							Matrix4 rightViewMatrixUrho = MatrixConversion.AffineTransformFromDirectX(viewTransform.Value.Right);
-                            Matrix4 leftProjMatrixUrho = MatrixConversion.ProjectionFromDirectX(cameraPose.ProjectionTransform.Left);
-							Matrix4 rightProjMatrixUrho = MatrixConversion.ProjectionFromDirectX(cameraPose.ProjectionTransform.Right);
+							Matrix4 leftViewMatrixUrho = MatrixConversion.AffineTransformFromHolographic(viewTransform.Value.Left);
+							Matrix4 rightViewMatrixUrho = MatrixConversion.AffineTransformFromHolographic(viewTransform.Value.Right);
+                            Matrix4 leftProjMatrixUrho = MatrixConversion.ProjectionFromHolographic(cameraPose.ProjectionTransform.Left);
+							Matrix4 rightProjMatrixUrho = MatrixConversion.ProjectionFromHolographic(cameraPose.ProjectionTransform.Right);
 
 							Game.UpdateStereoView(leftViewMatrixUrho, rightViewMatrixUrho, leftProjMatrixUrho, rightProjMatrixUrho);
 						}
