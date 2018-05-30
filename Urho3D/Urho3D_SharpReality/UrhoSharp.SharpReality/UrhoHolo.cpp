@@ -118,7 +118,6 @@ extern "C"
 	}
 
 	ComPtr<ID3D11Texture2D> cameraBackBuffer;
-	ComPtr<ID3D11Resource> resource;
 
 	void Camera_SetHoloProjection(Camera* camera, const class Matrix3x4& worldFromView, const class Matrix4& clipFromView)
 	{
@@ -166,12 +165,36 @@ extern "C"
 
 	ID3D11Texture2D* HoloLens_GetBackbuffer()
 	{
-		auto pose = current_frame->CurrentPrediction->CameraPoses->First()->Current;//TOOD: remove First()
-		auto renderingParams = current_frame->GetRenderingParameters(pose);
-		IDirect3DSurface^ surface = renderingParams->Direct3D11BackBuffer;
-		DX::ThrowIfFailed(Windows::Graphics::DirectX::Direct3D11::GetDXGIInterfaceFromObject(surface, IID_PPV_ARGS(&resource)));
-		DX::ThrowIfFailed(resource.As(&cameraBackBuffer));
+		if (!cameraBackBuffer)
+		{
+			auto pose = current_frame->CurrentPrediction->CameraPoses->First()->Current;//TOOD: remove First()
+			auto renderingParams = current_frame->GetRenderingParameters(pose);
+			IDirect3DSurface^ surface = renderingParams->Direct3D11BackBuffer;
+
+			ComPtr<ID3D11Resource> resource;
+			DX::ThrowIfFailed(Windows::Graphics::DirectX::Direct3D11::GetDXGIInterfaceFromObject(surface, IID_PPV_ARGS(&resource)));
+			DX::ThrowIfFailed(resource.As(&cameraBackBuffer));
+		}
 		return cameraBackBuffer.Get();
+	}
+
+	__declspec(dllexport) void Graphics_UpdateBackBuffer(Graphics* graphics, int width, int height)
+	{
+		auto prop = CoreWindow::GetForCurrentThread()->CustomProperties->Lookup("BackBuffer");
+		IDirect3DSurface^ surface = safe_cast<IDirect3DSurface^>(prop);
+
+		ComPtr<ID3D11Resource> resource;
+		DX::ThrowIfFailed(Windows::Graphics::DirectX::Direct3D11::GetDXGIInterfaceFromObject(surface, IID_PPV_ARGS(&resource)));
+
+		ComPtr<ID3D11Texture2D> backBuffer;
+		DX::ThrowIfFailed(resource.As(&backBuffer));
+
+		if (backBuffer.Get() != cameraBackBuffer.Get())
+		{
+			cameraBackBuffer = backBuffer;
+
+			graphics->UpdateBackBuffer(width, height);
+		}
 	}
 }
 template <typename t = byte>

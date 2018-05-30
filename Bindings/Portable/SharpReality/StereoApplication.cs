@@ -168,6 +168,14 @@ namespace Urho.SharpReality
 			this.rightProj = rightProj;
 		}
 
+        [DllImport(Consts.NativeImport, CallingConvention = CallingConvention.Cdecl)]
+        static extern void Graphics_UpdateBackBuffer(IntPtr graphics, int width, int height);
+
+        internal void UpdateBackBuffer(int width, int height)
+        {
+            Graphics_UpdateBackBuffer(Graphics.Handle, width, height);
+        }
+
 		public Dictionary<string, Action> CortanaCommands { get; private set; }
 
 		/// <summary>

@@ -15,6 +15,7 @@ namespace Urho.SharpReality
 	public class UrhoAppView : IFrameworkView, IDisposable 
 	{
 		Type holoAppType;
+        HolographicCamera camera;
 		ApplicationOptions options;
 		CoreWindow window;
 		bool windowVisible = true;
@@ -157,6 +158,9 @@ namespace Urho.SharpReality
 									 Game.FocusWorldPoint.Y, 
 									-Game.FocusWorldPoint.Z)); //LH->RH
 
+                        coreWindow.CustomProperties["BackBuffer"] = CurrentFrame.GetRenderingParameters(cameraPose).Direct3D11BackBuffer;
+                        Game.UpdateBackBuffer((int)camera.RenderTargetSize.Width, (int)camera.RenderTargetSize.Height);
+
 						Game.Engine.RunFrame();
 						CurrentFrame.PresentUsingCurrentPrediction(HolographicFramePresentWaitBehavior.WaitForFrameToFinish);
 					}
@@ -175,6 +179,8 @@ namespace Urho.SharpReality
 			{
 				await window.Dispatcher.RunAsync(CoreDispatcherPriority.High, () =>
 				{
+                    camera = args.Camera;
+
 					SpatialMappingManager = new SpatialMappingManager();
 					VoiceManager = new VoiceManager();
 
@@ -183,8 +189,8 @@ namespace Urho.SharpReality
 
 					//override some options:
 					options.LimitFps = false;
-					options.Width = (int)args.Camera.RenderTargetSize.Width;
-					options.Height = (int)args.Camera.RenderTargetSize.Height;
+					options.Width = (int)camera.RenderTargetSize.Width;
+					options.Height = (int)camera.RenderTargetSize.Height;
 
 					Game = (StereoApplication)Activator.CreateInstance(holoAppType, options);
 					Game.Run();

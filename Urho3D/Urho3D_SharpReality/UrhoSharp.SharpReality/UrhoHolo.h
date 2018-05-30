@@ -17,6 +17,7 @@
 #include <DirectXPackedVector.h>
 #include <Urho3D/Engine/Engine.h>
 #include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Scene/Node.h>
 #include <experimental\resumable>
 #include <pplawait.h>
